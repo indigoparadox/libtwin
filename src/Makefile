@@ -1,25 +1,22 @@
 
 # vim: ft=make noexpandtab
 
-SOURCES=ui/graphicu.c htmtree.c htmlrend.c
-CHECKOBJ=
+SOURCES=htmtree.c htmlrend.c
 OBJECTS=$(subst .c,.o,$(SOURCES))
 INCDIRS=-I../../camgraph/src -I../../camin/src -I../../libvcol/src
 CFLAGS=-Wall $(INCDIRS)
-LDFLAGS=
-
-BIN_LIN=tw
 
 MD=mkdir -v -p
+AR=ar
 
-$(BIN_LIN): CFLAGS += -g -DDEBUG
-$(BIN_LIN): LDFLAGS += $(shell pkg-config --libs ncurses)
-$(BIN_LIN): OBJDIR := ../obj/linux
+../bin/Debug-Linux-Allegro/libtwin.a: CFLAGS += -g -DDEBUG -DUSE_ALLEGRO
+../bin/Debug-Linux-Allegro/libtwin.a: OBJDIR := ../obj/linux
 
-all: $(BIN_LIN)
+all: ../bin/Debug-Linux-Allegro/libtwin.a
 
-$(BIN_LIN): $(OBJECTS)
-	$(CC) -o $@ $(addprefix $(OBJDIR)/,$^) $(LDFLAGS)
+../bin/Debug-Linux-Allegro/libtwin.a: $(OBJECTS) ui/graphicu.o
+	$(MD) ../bin/Debug-Linux-Allegro
+	$(AR) rcs $@ $(addprefix $(OBJDIR)/,$^)
 
 %.o: %.c
 	$(MD) $(OBJDIR)/$(dir $@)
@@ -29,8 +26,7 @@ $(BIN_LIN): $(OBJECTS)
 
 clean:
 	rm -rf ../obj; \
-	rm tests; \
-	rm $(BIN_LIN);
+	rm -rf ../bin
 
 
 
