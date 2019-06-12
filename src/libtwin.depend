@@ -6,12 +6,13 @@
 	"graphics.h"
 	"htmtree.h"
 
-1542809905 /home/user/Projects/Apps/camgraph/src/graphics.h
+1560370130 /home/user/Projects/Apps/camgraph/src/graphics.h
 	<math.h>
 	<stdint.h>
+	<stddef.h>
+	<stdbool.h>
 	<string.h>
 	<bstrlib/bstrlib.h>
-	<vbool.h>
 	<libvcol.h>
 	"colors.h"
 
@@ -65,12 +66,11 @@
 	"../htmtree.h"
 	"../htmlrend.h"
 
-1559678204 /home/user/Projects/Apps/libtwin/src/ui.h
+1560371548 /home/user/Projects/Apps/libtwin/src/ui.h
 	"libvcol.h"
 	"input.h"
 	"graphics.h"
 
-1559681099 /home/user/Projects/Apps/camin/src/input.h
+1560371688 /home/user/Projects/Apps/camin/src/input.h
 	<stdint.h>
-	"allegro/keyboard.h"
 
