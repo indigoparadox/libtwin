@@ -92,9 +92,9 @@ struct UI_WINDOW {
    unsigned int grid_iter;
    VBOOL dirty;
    struct UI_CONTROL* first_control;
-#ifdef DEBUG
+//#ifdef DEBUG
    uint32_t sentinal;
-#endif /* DEBUG */
+//#endif /* DEBUG */
 };
 
 struct UI_CONTROL {

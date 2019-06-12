@@ -7,28 +7,26 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug-Linux-Allegro">
-				<Option output="../bin/Debug-Linux-Allegro/twin" prefix_auto="1" extension_auto="1" />
+				<Option output="../bin/Debug-Linux/twin" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
-				<Option object_output="../obj/Debug-Linux-Allegro/" />
+				<Option object_output="../obj/Debug-Linux/" />
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DDEBUG" />
-					<Add option="-DUSE_ALLEGRO" />
 				</Compiler>
 			</Target>
 			<Target title="Release-Linux-Allegro">
-				<Option output="../bin/Release-Linux-Allegro/twin" prefix_auto="1" extension_auto="1" />
+				<Option output="../bin/Release-Linux/twin" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
-				<Option object_output="../obj/Release-Linux-Allegro/" />
+				<Option object_output="../obj/Release-Linux/" />
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-O2" />
-					<Add option="-DUSE_ALLEGRO" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
