@@ -8,7 +8,7 @@
 
 static struct UI global_ui;
 
-static VBOOL callback_free_controls( bstring idx, void* iter, void* arg ) {
+static bool callback_free_controls( bstring idx, void* iter, void* arg ) {
    bstring key_search = (bstring)arg;
    struct UI_CONTROL* control = (struct UI_CONTROL*)iter;
 
@@ -17,9 +17,9 @@ static VBOOL callback_free_controls( bstring idx, void* iter, void* arg ) {
       0 == bstrcmp( key_search, idx )
    ) {
       ui_control_free( control );
-      return VTRUE;
+      return true;
    }
-   return VFALSE;
+   return false;
 }
 
 static void* callback_search_windows( size_t idx, void* iter, void* arg ) {
@@ -31,16 +31,16 @@ static void* callback_search_windows( size_t idx, void* iter, void* arg ) {
    return NULL;
 }
 
-VBOOL callback_free_windows( size_t idx, void* iter, void* arg ) {
+bool callback_free_windows( size_t idx, void* iter, void* arg ) {
    bstring wid = (bstring)arg;
    struct UI_WINDOW* win = (struct UI_WINDOW*)iter;
    assert( NULL != iter );
    assert( ui_get_local() == win->ui );
    if( NULL == arg || 0 == bstrcmp( wid, win->id ) ) {
       ui_window_free( win );
-      return VTRUE;
+      return true;
    }
-   return VFALSE;
+   return false;
 }
 
 /* Count of all mboxes created so far. */
@@ -55,7 +55,7 @@ const struct tagbstring str_dialog_default_title =
    bsStatic( "Untitled Window" );
 
 static void ui_draw_rect(
-   struct UI_WINDOW* win, GRAPHICS_RECT* rect, GRAPHICS_COLOR color, VBOOL filled
+   struct UI_WINDOW* win, GRAPHICS_RECT* rect, GRAPHICS_COLOR color, bool filled
 ) {
    const GFX_COORD_PIXEL offset_y = UI_WINDOW_GRID_Y_START,
       total_y_test = rect->h + rect->y + offset_y;
@@ -74,11 +74,11 @@ static void ui_draw_rect(
 static void ui_draw_text(
    struct UI_WINDOW* win, GRAPHICS_RECT* rect,  GRAPHICS_TEXT_ALIGN alignment,
    GRAPHICS_COLOR color, GRAPHICS_FONT_SIZE size, const bstring text,
-   VBOOL cursor, VBOOL margins
+   bool cursor, bool margins
 ) {
    GFX_COORD_PIXEL offset_margins = 0;
 
-   if( VFALSE != margins ) {
+   if( false != margins ) {
       offset_margins = UI_TEXT_MARGIN;
    }
 
@@ -101,11 +101,11 @@ void ui_cleanup( struct UI* ui ) {
    vector_remove_cb( &(ui->windows), callback_free_windows, NULL );
    */
 
-   vector_lock( ui->windows, VTRUE );
+   vector_lock( ui->windows, true );
    while( 0 < vector_count( ui->windows ) ) {
       ui_window_pop( ui );
    }
-   vector_lock( ui->windows, VFALSE );
+   vector_lock( ui->windows, false );
 
    vector_free( &(ui->windows) );
 }
@@ -130,7 +130,7 @@ void ui_window_init(
    win->area.w = width;
    win->area.h = height;
    win->element = mem_alloc( 1, GRAPHICS );
-   win->dirty = VTRUE; /* Draw at least once. */
+   win->dirty = true; /* Draw at least once. */
 #ifdef DEBUG
    win->sentinal = UI_SENTINAL_WINDOW;
 #endif /* DEBUG */
@@ -151,7 +151,7 @@ void ui_window_init(
 
    if( NULL != prompt ) {
       ui_control_new(
-         ui, control, prompt, UI_CONTROL_TYPE_LABEL, VFALSE, VFALSE, NULL,
+         ui, control, prompt, UI_CONTROL_TYPE_LABEL, false, false, NULL,
          UI_CONST_WIDTH_FULL, UI_CONST_HEIGHT_FULL,
          UI_CONST_WIDTH_FULL, UI_CONST_HEIGHT_FULL
       );
@@ -204,7 +204,7 @@ void ui_window_free( struct UI_WINDOW* win ) {
 
 void ui_control_init(
    struct UI_CONTROL* control,
-   const bstring text, UI_CONTROL_TYPE type, VBOOL can_focus, VBOOL new_row,
+   const bstring text, UI_CONTROL_TYPE type, bool can_focus, bool new_row,
    bstring buffer, GFX_COORD_PIXEL x, GFX_COORD_PIXEL y,
    GFX_COORD_PIXEL width, GFX_COORD_PIXEL height
 ) {
@@ -215,7 +215,7 @@ void ui_control_init(
    } else if( NULL != buffer ) {
       assert( NULL == text );
       control->text = buffer;
-      control->borrowed_text_field = VTRUE;
+      control->borrowed_text_field = true;
    } else {
       control->text = NULL;
    }
@@ -258,7 +258,7 @@ void ui_control_add(
    assert( NULL != control );
    assert( &global_ui == win->ui );
 
-   if( hashmap_put( win->controls, id, control, VFALSE ) ) {
+   if( hashmap_put( win->controls, id, control, false ) ) {
       lg_error( __FILE__,
          "Attempted to double-add control: %b\n", id );
    }
@@ -273,7 +273,7 @@ void ui_control_add(
       control_last->next_control = control;
    }
 
-   if( VFALSE != control->can_focus ) {
+   if( false != control->can_focus ) {
       verr = vector_add( win->controls_active, control );
       if( 0 <= verr && NULL == win->active_control ) {
          win->active_control = control;
@@ -286,7 +286,7 @@ void ui_control_free( struct UI_CONTROL* control ) {
    assert( &global_ui == control->self.ui );
 
    ui_window_cleanup( &(control->self) );
-   if( VFALSE == control->borrowed_text_field ) {
+   if( false == control->borrowed_text_field ) {
       bdestroy( control->text );
       control->text = NULL;
    }
@@ -386,9 +386,9 @@ void ui_window_pop( struct UI* ui ) {
    assert( &global_ui == win->ui );
 
    ui_window_free( win );
-   vector_lock( ui->windows, VFALSE );
+   vector_lock( ui->windows, false );
    vector_remove( ui->windows, 0);
-   vector_lock( ui->windows, VTRUE );
+   vector_lock( ui->windows, true );
 
 cleanup:
    #ifdef DEBUG
@@ -419,7 +419,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
          items_list = (struct VECTOR*)control->self.attachment;
          if( 0 < control->self.selection ) {
             control->self.selection--;
-            win->dirty = VTRUE;
+            win->dirty = true;
          }
          goto cleanup;
 
@@ -429,7 +429,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
          if( vector_count( items_list ) <= control->self.selection ) {
             control->self.selection = 0;
          }
-         win->dirty = VTRUE;
+         win->dirty = true;
          goto cleanup;
 
       case INPUT_ASSIGNMENT_ATTACK:
@@ -451,7 +451,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
          if( control->min > *numbuff ) {
             *numbuff = control->max;
          }
-         win->dirty = VTRUE;
+         win->dirty = true;
          goto cleanup;
 
       case INPUT_SCANCODE_DOWN:
@@ -460,7 +460,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
          if( control->max < *numbuff ) {
             *numbuff = 0;
          }
-         win->dirty = VTRUE;
+         win->dirty = true;
          goto cleanup;
 
       case INPUT_SCANCODE_ENTER:
@@ -488,7 +488,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
          if( 0 > *numbuff ) {
             *numbuff = vector_count( control->list ) - 1;
          }
-         win->dirty = VTRUE;
+         win->dirty = true;
          goto cleanup;
 
       case INPUT_SCANCODE_DOWN:
@@ -497,7 +497,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
          if( vector_count( control->list ) <= *numbuff ) {
             *numbuff = 0;
          }
-         win->dirty = VTRUE;
+         win->dirty = true;
          goto cleanup;
 
       case INPUT_SCANCODE_ENTER:
@@ -536,7 +536,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
       switch( p->scancode ) {
       case INPUT_SCANCODE_BACKSPACE:
          bstr_result = btrunc( control->text, blength( control->text ) - 1 );
-         win->dirty = VTRUE; /* Check can shunt to cleanup, so dirty first. */
+         win->dirty = true; /* Check can shunt to cleanup, so dirty first. */
          lgc_nonzero( bstr_result );
          break;
 
@@ -566,7 +566,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
             lg_debug( __FILE__, "Input field: %s\n", bdata( buffer ) );
 #endif /* DEBUG_KEYS */
             bstr_result = bconchar( control->text, p->character );
-            win->dirty = VTRUE; /* Check can shunt to cleanup, so dirty first. */
+            win->dirty = true; /* Check can shunt to cleanup, so dirty first. */
             lgc_nonzero( bstr_result );
          }
          break;
@@ -583,7 +583,7 @@ int ui_poll_keys( struct UI_WINDOW* win, struct INPUT* p ) {
 
    case INPUT_SCANCODE_TAB:
       ui_window_next_active_control( win );
-      win->dirty = VTRUE;
+      win->dirty = true;
       goto cleanup;
 
    case INPUT_SCANCODE_ESC:
@@ -730,7 +730,7 @@ void ui_window_advance_grid(
       win->grid_pos.h = text.h;
    }
 
-   if( NULL == control || VFALSE != control->new_row ) {
+   if( NULL == control || false != control->new_row ) {
       win->grid_pos.x = UI_WINDOW_MARGIN;
       win->grid_pos.y += win->grid_pos.h + UI_WINDOW_MARGIN;
    } else {
@@ -897,12 +897,12 @@ static void* ui_control_draw_inventory_item(
       inv_pane == win->active_control &&
       inv_pane->self.selection == inv_pane->self.grid_iter
    ) {
-      ui_draw_rect( win, inv_grid, UI_SELECTED_BG, VTRUE );
+      ui_draw_rect( win, inv_grid, UI_SELECTED_BG, true );
    }
 
    ui_draw_text(
       win, inv_grid, GRAPHICS_TEXT_ALIGN_LEFT, GRAPHICS_COLOR_WHITE,
-      UI_TEXT_SIZE, e->display_name, VFALSE, VFALSE
+      UI_TEXT_SIZE, e->display_name, false, false
    );
 
    inv_grid->x += label_icon_offset + catalog->spritewidth;
@@ -928,7 +928,7 @@ static void ui_control_draw_inventory(
 
    graphics_shrink_rect( &bg_rect, UI_BAR_WIDTH );
 
-   ui_draw_rect( win, &bg_rect, GRAPHICS_COLOR_DARK_BLUE, VTRUE );
+   ui_draw_rect( win, &bg_rect, GRAPHICS_COLOR_DARK_BLUE, true );
 
    inv_pane->self.grid_iter = 0;
    items = inv_pane->self.attachment;
@@ -964,13 +964,13 @@ static void ui_control_draw_textfield(
    win->grid_pos.w = bg_rect.w;
    win->grid_pos.h = bg_rect.h;
 
-   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, VTRUE );
+   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, true );
 
    if( NULL != textfield->text ) {
       ui_draw_text(
          win, &(win->grid_pos),
          GRAPHICS_TEXT_ALIGN_LEFT, fg, UI_TEXT_SIZE, textfield->text,
-         textfield == win->active_control ? VTRUE : VFALSE, VTRUE
+         textfield == win->active_control ? true : false, true
       );
    }
 }
@@ -984,7 +984,7 @@ static void ui_control_draw_label(
       ui_draw_text(
          win, &(win->grid_pos),
          GRAPHICS_TEXT_ALIGN_LEFT, fg, UI_TEXT_SIZE, label->text,
-         label == win->active_control ? VTRUE : VFALSE, VTRUE
+         label == win->active_control ? true : false, true
       );
    }
 }
@@ -1002,13 +1002,13 @@ static void ui_control_draw_button(
    win->grid_pos.w = ui_control_get_draw_width( button );
    win->grid_pos.h = ui_control_get_draw_height( button );
 
-   ui_draw_rect( win, &(win->grid_pos), UI_BUTTON_BG, VFALSE );
+   ui_draw_rect( win, &(win->grid_pos), UI_BUTTON_BG, false );
 
    if( NULL != button->text ) {
       graphics_draw_text(
          g, win->grid_pos.x + UI_TEXT_MARGIN, win->grid_pos.y + UI_TEXT_MARGIN,
          GRAPHICS_TEXT_ALIGN_LEFT, fg, UI_TEXT_SIZE, button->text,
-         button == win->active_control ? VTRUE : VFALSE
+         button == win->active_control ? true : false
       );
    }
 }
@@ -1028,7 +1028,7 @@ static void ui_control_draw_spinner(
    win->grid_pos.w = ui_control_get_draw_width( spinner );
    win->grid_pos.h = ui_control_get_draw_height( spinner );
 
-   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, VFALSE );
+   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, false );
 
    numbuf = bformat( "%d", *num );
    graphics_draw_text(
@@ -1037,7 +1037,7 @@ static void ui_control_draw_spinner(
       /* TODO: Why does text float back up relative to background? */
       win->grid_pos.y + (/* Temp */ win->grid_pos.h) + UI_TEXT_MARGIN,
       GRAPHICS_TEXT_ALIGN_LEFT, fg, UI_TEXT_SIZE, numbuf,
-      spinner == win->active_control ? VTRUE : VFALSE
+      spinner == win->active_control ? true : false
    );
    bdestroy( numbuf );
 }
@@ -1069,7 +1069,7 @@ static void ui_control_draw_dropdown(
 #endif /* DEBUG */
    win->grid_pos.h = ui_control_get_draw_height( listbox );
 
-   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, VFALSE );
+   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, false );
 
    graphics_draw_text(
       g,
@@ -1078,7 +1078,7 @@ static void ui_control_draw_dropdown(
       win->grid_pos.y + (/* Temp */ win->grid_pos.h) + UI_TEXT_MARGIN,
       GRAPHICS_TEXT_ALIGN_LEFT, fg, UI_TEXT_SIZE,
       list_item,
-      listbox == win->active_control ? VTRUE : VFALSE
+      listbox == win->active_control ? true : false
    );
 
 #ifdef DEBUG
@@ -1116,13 +1116,13 @@ static void ui_control_draw_html(
    win->grid_pos.w = bg_rect.w;
    win->grid_pos.h = bg_rect.h;
 
-   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, VTRUE );
+   ui_draw_rect( win, &(win->grid_pos), UI_TEXT_BG, true );
 
    if( NULL != textfield->text ) {
       ui_draw_text(
          win, &(win->grid_pos),
          GRAPHICS_TEXT_ALIGN_LEFT, fg, UI_TEXT_SIZE, textfield->text,
-         textfield == win->active_control ? VTRUE : VFALSE, VTRUE
+         textfield == win->active_control ? true : false, true
       );
    }
 #endif
@@ -1130,16 +1130,16 @@ static void ui_control_draw_html(
 
 static void ui_window_enforce_minimum_size( struct UI_WINDOW* win ) {
    GRAPHICS_RECT* largest_control = NULL;
-   VBOOL auto_h = VFALSE;
-   VBOOL auto_w = VFALSE;
+   bool auto_h = false;
+   bool auto_w = false;
 
    if( 0 >= win->area.h ) {
       win->area.h = UI_WINDOW_MIN_HEIGHT;
-      auto_h = VTRUE;
+      auto_h = true;
    }
    if( 0 >= win->area.w ) {
       win->area.w = UI_WINDOW_MIN_WIDTH;
-      auto_w = VTRUE;
+      auto_w = true;
    }
 
    /* Make sure the window can contain its largest control. */
@@ -1187,7 +1187,7 @@ static void ui_window_enforce_minimum_size( struct UI_WINDOW* win ) {
    );
    assert( NULL == largest_control );
 
-   if( VFALSE != auto_h ) {
+   if( false != auto_h ) {
       win->area.h += UI_WINDOW_GRID_Y_START;
       ui_window_transform( win, &(win->area) );
    }
@@ -1200,12 +1200,12 @@ static void ui_window_draw_furniture( const struct UI_WINDOW* win ) {
    graphics_draw_rect(
       win->element, UI_BAR_WIDTH, UI_BAR_WIDTH,
       win->area.w - (2 * UI_BAR_WIDTH), UI_TITLEBAR_SIZE + (2 * UI_BAR_WIDTH),
-      UI_TITLEBAR_BG, VTRUE
+      UI_TITLEBAR_BG, true
    );
    graphics_draw_text(
       win->element, win->area.w / UI_BAR_WIDTH, (2 * UI_BAR_WIDTH),
       GRAPHICS_TEXT_ALIGN_CENTER,
-      UI_TITLEBAR_FG, UI_TITLEBAR_SIZE, win->title, VFALSE
+      UI_TITLEBAR_FG, UI_TITLEBAR_SIZE, win->title, false
    );
 }
 
@@ -1217,12 +1217,12 @@ static void* ui_window_draw_cb( size_t idx, void* iter, void* arg ) {
       win_y = win->area.y;
    struct UI_CONTROL* control = NULL;
 
-   if( VFALSE != win->dirty ) {
+   if( false != win->dirty ) {
       ui_window_enforce_minimum_size( win );
 
       /* Draw the window. */
       graphics_draw_rect(
-         win->element, 0, 0, win->area.w, win->area.h, UI_WINDOW_BG, VTRUE
+         win->element, 0, 0, win->area.w, win->area.h, UI_WINDOW_BG, true
       );
 
       /* Draw the controls on to the window surface. */
@@ -1254,7 +1254,7 @@ static void* ui_window_draw_cb( size_t idx, void* iter, void* arg ) {
          control = control->next_control;
       }
 
-      win->dirty = VFALSE;
+      win->dirty = false;
 
       assert( win->ui == &global_ui );
    }
@@ -1310,7 +1310,7 @@ struct UI_WINDOW* ui_window_by_id( struct UI* ui, const bstring wid ) {
    return found;
 }
 
-VBOOL ui_window_destroy( struct UI* ui, const bstring wid ) {
+bool ui_window_destroy( struct UI* ui, const bstring wid ) {
    assert( &global_ui == ui );
    return vector_remove_cb( ui->windows, callback_free_windows, wid );
 }
@@ -1355,12 +1355,12 @@ void ui_message_box( struct UI* ui, const bstring message ) {
       UI_CONST_WIDTH_FULL, UI_CONST_HEIGHT_FULL );
 
    ui_control_new( ui, control, message,
-      UI_CONTROL_TYPE_LABEL, VFALSE, VTRUE, NULL, -1, -1,
+      UI_CONTROL_TYPE_LABEL, false, true, NULL, -1, -1,
       UI_CONST_WIDTH_FULL, UI_CONST_HEIGHT_FULL );
    ui_control_add( win_mbox, &str_cid_mbox_l, control );
 
    ui_control_new( ui, control, &str_ok,
-      UI_CONTROL_TYPE_BUTTON, VFALSE, VTRUE, NULL, -1, -1,
+      UI_CONTROL_TYPE_BUTTON, false, true, NULL, -1, -1,
       UI_CONST_WIDTH_FULL, UI_CONST_HEIGHT_FULL );
    ui_control_add( win_mbox, &str_cid_mbox_b, control );
 
@@ -1386,7 +1386,7 @@ void ui_debug_window( struct UI* ui, const bstring id, bstring buffer ) {
    control_debug = ui_control_by_id( win_debug, id );
    if( NULL == control_debug ) {
       ui_control_new( ui, control_debug, NULL,
-         UI_CONTROL_TYPE_LABEL, VFALSE, VTRUE, buffer, 310, 110,
+         UI_CONTROL_TYPE_LABEL, false, true, buffer, 310, 110,
          UI_CONST_WIDTH_FULL, UI_CONST_HEIGHT_FULL );
       ui_control_add( win_debug, id, control_debug );
    }
