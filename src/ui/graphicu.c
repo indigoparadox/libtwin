@@ -879,7 +879,7 @@ static void* ui_control_draw_inventory_item(
    graphics_measure_text(
       win->element, &label_size, UI_TEXT_SIZE, e->display_name
    );
-   scaffold_assert( 0 < label_size.w );
+   assert( 0 < label_size.w );
    label_icon_offset = (label_size.w / 2) - (catalog->spritewidth / 2);
 
    inv_grid->x += label_icon_offset + UI_TEXT_MARGIN;
