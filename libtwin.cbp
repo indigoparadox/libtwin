@@ -7,9 +7,9 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug-Linux-Allegro">
-				<Option output="../bin/Debug-Linux/twin" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Debug-Linux/twin" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
-				<Option object_output="../obj/Debug-Linux/" />
+				<Option object_output="obj/Debug-Linux/" />
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
@@ -19,9 +19,9 @@
 				</Compiler>
 			</Target>
 			<Target title="Release-Linux-Allegro">
-				<Option output="../bin/Release-Linux/twin" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/Release-Linux/twin" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
-				<Option object_output="../obj/Release-Linux/" />
+				<Option object_output="obj/Release-Linux/" />
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
@@ -35,20 +35,20 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add directory="../../camgraph/src" />
-			<Add directory="../../camin/src" />
-			<Add directory="../../libvcol/src" />
+			<Add directory="../camgraph/src" />
+			<Add directory="../camin/src" />
+			<Add directory="../libvcol/src" />
 		</Compiler>
-		<Unit filename="htmlrend.c">
+		<Unit filename="src/htmlrend.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="htmlrend.h" />
-		<Unit filename="htmtree.c">
+		<Unit filename="src/htmlrend.h" />
+		<Unit filename="src/htmtree.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="htmtree.h" />
-		<Unit filename="ui.h" />
-		<Unit filename="ui/graphicu.c">
+		<Unit filename="src/htmtree.h" />
+		<Unit filename="src/ui.h" />
+		<Unit filename="src/ui/graphicu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
